@@ -1,0 +1,4 @@
+{"check":"groups.ProtectedUsers","value":0,"severity":"high","note":"0 участников значит: ключевые админы не защищены"}
+{"check":"accounts.passwordNeverExpires","value":64,"severity":"medium","note":"делить на сервисные и забытые"}
+{"check":"backup.jobs","value":"нет заданий","severity":"critical","note":"ВМ без регулярного бэкапа"}
+{"check":"domain.name","value":"example.local","severity":"info","note":""}
