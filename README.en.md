@@ -48,4 +48,12 @@ finding rather than as health.
   marked as unreadable when it is missing.
 - Severity is expert judgement: what stops the business or leaks data, not a formal standard.
 
-Russian documentation: [README.md](README.md). License: MIT.
+## Related repositories
+
+| Repository | What it adds |
+|---|---|
+| [v100-field-notes](https://github.com/eightpaws/v100-field-notes) | the measurements the model-selection rules come from |
+| [onprem-llm-closed-loop](https://github.com/eightpaws/onprem-llm-closed-loop) | an LLM stand with no route to the internet, isolation verified by a script |
+| [eightpaws](https://github.com/eightpaws) | profile: what else is published |
+
+Russian documentation: [README.md](README.md). License: MIT for code (`LICENSE`), CC BY 4.0 for text and docs (`LICENSE-DOCS`).

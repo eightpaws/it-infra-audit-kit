@@ -118,6 +118,14 @@ Linux, копии (`linux/audit-backups.sh`):
 
 English: [README.en.md](README.en.md). Живой пример отчёта: https://eightpaws.github.io/it-infra-audit-kit/
 
+## Смежные репозитории
+
+| Репозиторий | Что добавляет |
+|---|---|
+| [v100-field-notes](https://github.com/eightpaws/v100-field-notes) | замеры на Tesla V100, из которых взяты правила выбора модели |
+| [onprem-llm-closed-loop](https://github.com/eightpaws/onprem-llm-closed-loop) | стенд ИИ без выхода в интернет, проверка изоляции скриптом |
+| [eightpaws](https://github.com/eightpaws) | профиль: что ещё опубликовано |
+
 ## Лицензия
 
-MIT. Автор: Антон Коровин, [korovin.info](https://korovin.info).
+MIT для кода (`LICENSE`), CC BY 4.0 для текстов и примеров отчётов (`LICENSE-DOCS`). Автор: Антон Коровин, [korovin.info](https://korovin.info).

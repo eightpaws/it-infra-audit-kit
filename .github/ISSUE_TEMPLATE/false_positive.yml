@@ -1,0 +1,39 @@
+name: False positive
+description: A check in the report is wrong about a healthy system
+title: "[false positive] "
+labels: ["false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A check that reports a problem on a healthy system is worse than no check: it teaches the reader to ignore the report. Please include the real state of the system.
+  - type: input
+    id: check
+    attributes:
+      label: Check ID
+      description: the identifier as printed in the report
+    validations:
+      required: true
+  - type: textarea
+    id: reported
+    attributes:
+      label: What the report said
+      description: paste the finding line
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What the system actually looks like
+      description: the real value, and the command that shows it
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS and module versions
+      description: Windows build or Linux distribution, PowerShell version if relevant
+    validations:
+      required: true
