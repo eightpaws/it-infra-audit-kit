@@ -1,5 +1,7 @@
 # Аудит ИТ-инфраструктуры: AD, гипервизор, бэкапы
 
+[![ci](https://github.com/eightpaws/it-infra-audit-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/eightpaws/it-infra-audit-kit/actions/workflows/ci.yml)
+
 Набор скриптов, которые снимают состояние домена, виртуальных машин и резервного копирования и складывают это в отчёт с оценкой риска. Только чтение: ни одна проверка ничего не меняет.
 
 Сделано под реальную эксплуатацию: Windows и Linux, домен на Windows Server, гипервизор Proxmox VE, бэкапы через vzdump и Windows Server Backup. Проверки собраны не из статей, а из рабочих грабель, каждая описана в `docs/pitfalls.md`.
@@ -41,6 +43,8 @@ python3 tools/render.py out/*.jsonl -o out/report.md
 Код возврата `render.py` равен 1, если есть критичные находки: удобно для мониторинга и CI.
 
 ## Как выглядит результат
+
+![Отчёт аудита](docs/report-preview.png)
 
 ```
 отчёт: out/report.md (5 находок, критичных: 0)
