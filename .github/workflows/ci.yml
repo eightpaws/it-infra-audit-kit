@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Синтаксис bash
+        run: |
+          for f in linux/*.sh; do
+            bash -n "$f" && echo "ok: $f"
+          done
+
+      - name: Синтаксис PowerShell
+        shell: pwsh
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem windows/*.ps1) {
+            $errs = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errs) | Out-Null
+            if ($errs.Count -gt 0) {
+              $bad = 1
+              $errs | ForEach-Object { Write-Host "::error file=$($f.Name)::$($_.Message)" }
+            } else {
+              Write-Host "ok: $($f.Name)"
+            }
+          }
+          if ($bad) { exit 1 }
+
+      - name: Отчёт собирается из находок
+        run: |
+          set +e
+          python3 tools/render.py examples/sample-audit.jsonl -o out/report.md
+          code=$?
+          set -e
+          # 1 означает «есть критичные находки»: для эталонного набора это норма
+          if [ "$code" -ne 1 ]; then echo "ожидали код 1, получили $code"; exit 1; fi
+          test -s out/report.md
+          grep -q "Что чинить первым" out/report.md
+          echo "отчёт собран, критичные находки распознаны"
+
+      - name: Проверки ловят пустые значения
+        run: |
+          printf '%s\n' '{"check":"dns.zones","value":"не читается","severity":"medium","note":"нет прав"}' > /tmp/empty.jsonl
+          set +e
+          python3 tools/render.py /tmp/empty.jsonl -o /tmp/r.md
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ]; then echo "без критичных код должен быть 0, получили $code"; exit 1; fi
+          grep -q "не читается" /tmp/r.md && echo "пустое значение попало в отчёт как находка"
