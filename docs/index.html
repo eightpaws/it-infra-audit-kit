@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аудит ИТ-инфраструктуры: пример отчёта</title>
+<meta name="description" content="Пример отчёта аудита домена Active Directory, гипервизора Proxmox и резервного копирования: находки с уровнями риска и разбором.">
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --line:#30363d; --soft:#21262d;
+  --text:#e6edf3; --muted:#8b949e; --link:#79c0ff;
+  --crit:#b42318; --high:#c4320a; --med:#b54708; --low:#667085; --info:#475467;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:56px 28px 80px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:24px;
+  border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:38px;flex-wrap:wrap}
+h1{font-size:26px;line-height:1.25;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font-size:14px;font-weight:400;color:var(--muted);margin-top:8px;letter-spacing:0}
+nav a{color:var(--muted);text-decoration:none;font-size:14px;margin-left:18px}
+nav a:hover{color:var(--text)}
+.lede{color:var(--muted);font-size:15px;max-width:74ch;margin:0 0 34px}
+.lede b{color:var(--text);font-weight:600}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  font-weight:600;margin:44px 0 14px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--panel);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;letter-spacing:.06em;
+  text-transform:uppercase;padding:13px 16px;background:var(--soft);border-bottom:1px solid var(--line)}
+td{padding:13px 16px;border-bottom:1px solid var(--soft);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.chk{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;color:var(--link);white-space:nowrap}
+.note{color:var(--muted);font-size:13.5px}
+.sev{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:20px;white-space:nowrap}
+.c{background:rgba(180,35,24,.16);color:#ff8b7e}
+.h{background:rgba(196,50,10,.16);color:#ff9f6e}
+.m{background:rgba(181,71,8,.16);color:#ffc06e}
+.l{background:rgba(102,112,133,.18);color:#b6c0cf}
+.i{background:rgba(71,84,103,.2);color:#9aa7b4}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;
+  overflow:auto;font-size:13.5px;color:#cdd9e5}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+.foot a{color:var(--link);text-decoration:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:22px 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card b{display:block;font-size:14px;margin-bottom:6px}
+.card span{color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Аудит ИТ-инфраструктуры
+    <small>домен Active Directory, Proxmox VE, резервное копирование · пример отчёта</small>
+  </h1>
+  <nav><a href="https://github.com/eightpaws/it-infra-audit-kit">исходный код</a></nav>
+</header>
+
+<p class="lede">Так выглядит результат прогона скриптов из набора <b>it-infra-audit-kit</b>: находки идут одной таблицей,
+сверху то, что чинится первым. Ниже - реальные проверки и уровни, которые скрипты ставят сами.
+Эта страница статическая: собранная из JSONL тем же <code>tools/render.py</code>, что и обычный отчёт.</p>
+
+<div class="grid">
+  <div class="card"><b>Только чтение</b><span>ни одна проверка ничего не меняет в инфраструктуре</span></div>
+  <div class="card"><b>Два стека</b><span>PowerShell для домена и Windows, bash для Proxmox и Linux</span></div>
+  <div class="card"><b>Код возврата 1</b><span>при критичной находке: подходит для мониторинга и CI</span></div>
+</div>
+
+<h2>Отчёт: что чинить первым</h2>
+<table>
+  <thead><tr><th>Проверка</th><th>Значение</th><th>Уровень</th><th>Комментарий</th></tr></thead>
+  <tbody>
+    <tr><td class="chk">backup.jobs</td><td>нет заданий</td><td><span class="sev c">Критично</span></td>
+        <td class="note">Виртуальные машины без регулярного бэкапа</td></tr>
+    <tr><td class="chk">groups.ProtectedUsers</td><td>0</td><td><span class="sev h">Высокий</span></td>
+        <td class="note">0 участников значит: ключевые админы не защищены от кражи Kerberos-тикетов</td></tr>
+    <tr><td class="chk">replication.errors</td><td>есть ошибки</td><td><span class="sev c">Критично</span></td>
+        <td class="note">Разбирать repadmin /showrepl по каждому контроллеру</td></tr>
+    <tr><td class="chk">wbadmin.lastBackupAgeHours</td><td>152</td><td><span class="sev h">Высокий</span></td>
+        <td class="note">Копия старше 48 часов не защищает от шифровальщика</td></tr>
+    <tr><td class="chk">computers.lapsCoverage</td><td>989 из 1098 (90,1%)</td><td><span class="sev m">Средний</span></td>
+        <td class="note">Остаток добрать: локальный админ без LAPS - общий пароль на парк</td></tr>
+    <tr><td class="chk">accounts.passwordNeverExpires</td><td>64</td><td><span class="sev m">Средний</span></td>
+        <td class="note">Делить на сервисные (gMSA) и забытые</td></tr>
+    <tr><td class="chk">storage.local-zfs</td><td>91%</td><td><span class="sev h">Высокий</span></td>
+        <td class="note">Бэкап перестанет помещаться</td></tr>
+    <tr><td class="chk">restore.lastDrillDays</td><td>нет журнала</td><td><span class="sev h">Высокий</span></td>
+        <td class="note">Копии есть, восстановление не проверялось: считать, что бэкапа нет</td></tr>
+    <tr><td class="chk">krbtgt.passwordAgeDays</td><td>214</td><td><span class="sev l">Низкий</span></td>
+        <td class="note">Ротация по регламенту, дважды с паузой для репликации</td></tr>
+    <tr><td class="chk">domain.forestMode</td><td>Windows2016Forest</td><td><span class="sev i">Справочно</span></td>
+        <td class="note">Смена режима - операция с бэкапом и окном</td></tr>
+  </tbody>
+</table>
+
+<h2>Как это получается</h2>
+<pre><code>.\windows\Invoke-AdAudit.ps1 -OutFile out\ad-audit.jsonl
+.\windows\Invoke-BackupAudit.ps1 -OutFile out\backup-audit.jsonl
+./linux/audit-pve.sh out/pve-audit.jsonl
+./linux/audit-backups.sh out/backup-audit.jsonl
+python3 tools/render.py out/*.jsonl -o out/report.md</code></pre>
+
+<p class="lede">Каждая находка - одна строка JSONL: <code>{"check","value","severity","note"}</code>.
+Поэтому отчёт можно собрать из любого набора скриптов, в том числе добавить свой (Veeam, PBS, чужой мониторинг) и не переписывать рендер.</p>
+
+<h2>Почему проверки именно такие</h2>
+<p class="lede">Список собран не из статей, а из рабочих грабель, каждая описана в репозитории:
+<code>MachineAccountQuota</code> отдаёт коллекцию вместо числа; <code>Get-DnsServerZone</code> без <code>-ComputerName</code> молча возвращает пустоту;
+«задание завершено успешно» не значит «восстановится»; режим <code>suspend</code> в vzdump останавливает виртуальную машину.
+Пустое значение в отчёте помечается как находка, а не как норма.</p>
+
+<div class="foot">
+  Пример подготовлен для <a href="https://korovin.info">korovin.info</a> ·
+  код, документация и список грабель: <a href="https://github.com/eightpaws/it-infra-audit-kit">github.com/eightpaws/it-infra-audit-kit</a>
+</div>
+
+</div>
+</body>
+</html>
