@@ -116,6 +116,8 @@ Linux, копии (`linux/audit-backups.sh`):
 - порог свежести копий (`-MaxAgeHours`, по умолчанию 48);
 - если бэкап идёт через Veeam или PBS, добавить соответствующие проверки: структура отчёта это позволяет, нужен только новый скрипт, который пишет такие же JSONL-строки.
 
+English: [README.en.md](README.en.md). Живой пример отчёта: https://eightpaws.github.io/it-infra-audit-kit/
+
 ## Лицензия
 
 MIT. Автор: Антон Коровин, [korovin.info](https://korovin.info).
